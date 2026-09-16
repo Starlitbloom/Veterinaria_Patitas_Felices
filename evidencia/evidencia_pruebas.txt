@@ -1,0 +1,27 @@
+=== Evidencia de pruebas — asistente_rag.py ===
+Ejecución: python3 asistente_rag.py
+Fecha: 2026-09-16 14:51
+
+
+Consulta: ¿Cómo agendo una hora para mi mascota?
+Fuentes usadas: ['faq_agendar_cita', 'faq_reprogramar_cita']
+Respuesta: [RESPUESTA SIMULADA - configura ANTHROPIC_API_KEY para respuesta real]
+Basado en el contexto recuperado, aquí iría la respuesta generada por el LLM.
+
+Consulta: ¿Cuál es el horario de atención y dónde está ubicada la clínica?
+Fuentes usadas: ['horario_ubicacion', 'faq_historial_clinico']
+Respuesta: [RESPUESTA SIMULADA - configura ANTHROPIC_API_KEY para respuesta real]
+Basado en el contexto recuperado, aquí iría la respuesta generada por el LLM.
+
+Consulta: Mi gato tiene diarrea, ¿qué le puedo dar?
+Fuentes usadas: []
+Respuesta: [RESPUESTA SIMULADA - configura ANTHROPIC_API_KEY para respuesta real]
+Basado en el contexto recuperado, aquí iría la respuesta generada por el LLM.
+
+=== Contenido de logs_consultas.jsonl (trazabilidad generada) ===
+{"timestamp": "2026-09-16T14:51:58.105464", "consulta": "¿Cómo agendo una hora para mi mascota?", "fuentes_usadas": ["faq_agendar_cita", "faq_reprogramar_cita"], "respuesta": "[RESPUESTA SIMULADA - configura ANTHROPIC_API_KEY para respuesta real]\nBasado en el contexto recuperado, aquí iría la respuesta generada por el LLM."}
+{"timestamp": "2026-09-16T14:51:58.105662", "consulta": "¿Cuál es el horario de atención y dónde está ubicada la clínica?", "fuentes_usadas": ["horario_ubicacion", "faq_historial_clinico"], "respuesta": "[RESPUESTA SIMULADA - configura ANTHROPIC_API_KEY para respuesta real]\nBasado en el contexto recuperado, aquí iría la respuesta generada por el LLM."}
+{"timestamp": "2026-09-16T14:51:58.105824", "consulta": "Mi gato tiene diarrea, ¿qué le puedo dar?", "fuentes_usadas": [], "respuesta": "[RESPUESTA SIMULADA - configura ANTHROPIC_API_KEY para respuesta real]\nBasado en el contexto recuperado, aquí iría la respuesta generada por el LLM."}
+{"timestamp": "2026-09-16T14:51:58.129223", "consulta": "¿Cómo agendo una hora para mi mascota?", "fuentes_usadas": ["faq_agendar_cita", "faq_reprogramar_cita"], "respuesta": "[RESPUESTA SIMULADA - configura ANTHROPIC_API_KEY para respuesta real]\nBasado en el contexto recuperado, aquí iría la respuesta generada por el LLM."}
+{"timestamp": "2026-09-16T14:51:58.129394", "consulta": "¿Cuál es el horario de atención y dónde está ubicada la clínica?", "fuentes_usadas": ["horario_ubicacion", "faq_historial_clinico"], "respuesta": "[RESPUESTA SIMULADA - configura ANTHROPIC_API_KEY para respuesta real]\nBasado en el contexto recuperado, aquí iría la respuesta generada por el LLM."}
+{"timestamp": "2026-09-16T14:51:58.129528", "consulta": "Mi gato tiene diarrea, ¿qué le puedo dar?", "fuentes_usadas": [], "respuesta": "[RESPUESTA SIMULADA - configura ANTHROPIC_API_KEY para respuesta real]\nBasado en el contexto recuperado, aquí iría la respuesta generada por el LLM."}
