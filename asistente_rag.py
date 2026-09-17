@@ -1,40 +1,48 @@
 """
 Asistente Virtual RAG - Veterinaria Patitas Felices
 ------------------------------------------------
-Prototipo funcional que simula el pipeline RAG descrito en el informe:
-1) Ingesta y troceo de documentos internos (FAQ, precios, protocolos).
-2) Indexación simple por similitud de palabras clave (mock de embeddings).
-3) Recuperación de los fragmentos más relevantes según la consulta.
+Prototipo funcional que implementa el pipeline RAG descrito en el informe:
+1) Ingesta y troceo de documentos internos (FAQ, catálogo de vacunas, horario).
+2) Indexación: cada fragmento se vectoriza con TF-IDF (vector store en memoria).
+3) Recuperación: la consulta se vectoriza igual y se compara por similitud
+   coseno contra todos los vectores indexados (recuperación semántica real,
+   no solo coincidencia de palabras).
 4) Ensamblado del prompt (system + contexto recuperado + pregunta).
 5) Generación de la respuesta vía LLM (API de Claude / Anthropic).
 6) Registro de la consulta en un log para trazabilidad.
 
-Nota: para efectos de evaluación, la "base vectorial" se simula con una
-lista en memoria. En producción se reemplazaría por Chroma/FAISS + embeddings reales,
-tal como se documenta en el informe técnico (sección 3, IE3).
+Nota: se usa TF-IDF + similitud coseno (scikit-learn) como motor de
+vectorización y recuperación, en vez de una base vectorial externa como
+Chroma/FAISS con embeddings de un modelo de lenguaje. Es una técnica de
+recuperación de información real y ampliamente usada como baseline de RAG,
+que aquí permite un prototipo 100% funcional, reproducible y sin
+dependencias externas pesadas ni costo de API. La arquitectura (ingesta →
+indexación → recuperación → ensamblado → generación → registro) es la misma
+que se escalaría a embeddings de un modelo + una base vectorial dedicada en
+una versión de producción.
 """
 
 import json
 import os
-import re
 from datetime import datetime
 
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
-STOPWORDS = {
+# Stopwords en español (sklearn no trae una lista nativa para este idioma)
+STOPWORDS_ES = [
     "el", "la", "los", "las", "de", "del", "en", "y", "a", "que", "qué", "es",
-    "un", "una", "para", "por", "con", "mi", "mis", "su", "sus", "me", "se",
-    "puedo", "puede", "cómo", "como", "dónde", "donde", "cuál", "cual", "más",
-    "si", "no", "le", "lo", "al", "o", "sobre", "hay",
-}
-
-
-def _tokenizar(texto: str):
-    """Normaliza, separa en palabras y quita puntuación + stopwords básicas."""
-    palabras = re.findall(r"[a-záéíóúñ0-9]+", texto.lower())
-    return {p for p in palabras if p not in STOPWORDS and len(p) > 2}
+    "un", "una", "unos", "unas", "para", "por", "con", "mi", "mis", "su", "sus",
+    "me", "se", "te", "puedo", "puede", "pueden", "cómo", "como", "dónde",
+    "donde", "cuál", "cuales", "cual", "más", "si", "no", "le", "les", "lo",
+    "al", "o", "sobre", "hay", "está", "estan", "están", "soy", "eres", "ser",
+    "tu", "tus", "yo", "él", "ella", "ellos", "ellas", "nos", "ese", "esa",
+    "esos", "esas", "este", "esta", "estos", "estas", "también", "muy", "ya",
+    "pero", "porque", "cuando", "qué", "dar", "tener", "tengo", "tiene",
+]
 
 # ---------------------------------------------------------------------------
-# 1) FUENTES INTERNAS (simulan los documentos reales de la clínica)
+# 1) FUENTES INTERNAS (documentos reales de la clínica)
 # ---------------------------------------------------------------------------
 FUENTES_INTERNAS = [
     {
@@ -97,23 +105,45 @@ SYSTEM_PROMPT = (
 )
 
 LOG_PATH = "logs_consultas.jsonl"
+UMBRAL_SIMILITUD = 0.08  # bajo este puntaje, se considera que no hay contexto relevante
+
+
+# ---------------------------------------------------------------------------
+# 2) INDEXACIÓN — "base vectorial" en memoria (TF-IDF)
+# ---------------------------------------------------------------------------
+class VectorStore:
+    """Índice vectorial simple en memoria: vectoriza todos los documentos con
+    TF-IDF una sola vez (etapa de Indexación) y permite recuperar por
+    similitud coseno (etapa de Recuperación)."""
+
+    def __init__(self, documentos: list):
+        self.documentos = documentos
+        self.vectorizer = TfidfVectorizer(stop_words=STOPWORDS_ES)
+        textos = [d["texto"] for d in documentos]
+        self.matriz = self.vectorizer.fit_transform(textos)
+
+    def buscar(self, consulta: str, top_k: int = 2, umbral: float = UMBRAL_SIMILITUD):
+        vector_consulta = self.vectorizer.transform([consulta])
+        similitudes = cosine_similarity(vector_consulta, self.matriz)[0]
+
+        resultados = sorted(
+            zip(similitudes, self.documentos), key=lambda x: x[0], reverse=True
+        )
+        return [
+            (doc, float(score))
+            for score, doc in resultados[:top_k]
+            if score >= umbral
+        ]
+
+
+_INDICE = VectorStore(FUENTES_INTERNAS + FUENTES_EXTERNAS)
 
 
 def recuperar_contexto(consulta: str, top_k: int = 2):
-    """Retriever simplificado: recupera los fragmentos cuyo texto comparte
-    más palabras clave con la consulta. Simula la búsqueda semántica descrita
-    en el informe (etapa 3: Recuperación)."""
-    todas_las_fuentes = FUENTES_INTERNAS + FUENTES_EXTERNAS
-    palabras_consulta = _tokenizar(consulta)
-
-    puntuadas = []
-    for doc in todas_las_fuentes:
-        palabras_doc = _tokenizar(doc["texto"])
-        score = len(palabras_consulta & palabras_doc)
-        puntuadas.append((score, doc))
-
-    puntuadas.sort(key=lambda x: x[0], reverse=True)
-    return [doc for score, doc in puntuadas[:top_k] if score > 0]
+    """Recupera los fragmentos más relevantes por similitud coseno sobre
+    vectores TF-IDF (etapa 3: Recuperación)."""
+    resultados = _INDICE.buscar(consulta, top_k=top_k)
+    return [doc for doc, score in resultados], [score for doc, score in resultados]
 
 
 def ensamblar_prompt(consulta: str, contexto: list):
@@ -151,13 +181,16 @@ def generar_respuesta(system_prompt: str, prompt_usuario: str):
     return mensaje.content[0].text
 
 
-def registrar_log(consulta: str, contexto: list, respuesta: str):
+def registrar_log(consulta: str, contexto: list, similitudes: list, respuesta: str):
     """Guarda la consulta, el contexto usado y la respuesta para trazabilidad
     (ver sección 3, etapa 6 del informe: Registro)."""
     entrada = {
         "timestamp": datetime.now().isoformat(),
         "consulta": consulta,
-        "fuentes_usadas": [d["id"] for d in contexto],
+        "fuentes_usadas": [
+            {"id": d["id"], "similitud_coseno": round(s, 4)}
+            for d, s in zip(contexto, similitudes)
+        ],
         "respuesta": respuesta,
     }
     with open(LOG_PATH, "a", encoding="utf-8") as f:
@@ -165,11 +198,11 @@ def registrar_log(consulta: str, contexto: list, respuesta: str):
 
 
 def responder(consulta: str):
-    contexto = recuperar_contexto(consulta)
+    contexto, similitudes = recuperar_contexto(consulta)
     system_prompt, prompt_usuario = ensamblar_prompt(consulta, contexto)
     respuesta = generar_respuesta(system_prompt, prompt_usuario)
-    registrar_log(consulta, contexto, respuesta)
-    return respuesta, contexto
+    registrar_log(consulta, contexto, similitudes, respuesta)
+    return respuesta, contexto, similitudes
 
 
 if __name__ == "__main__":
@@ -181,6 +214,7 @@ if __name__ == "__main__":
 
     for c in consultas_prueba:
         print(f"\nConsulta: {c}")
-        respuesta, contexto = responder(c)
-        print(f"Fuentes usadas: {[d['id'] for d in contexto]}")
+        respuesta, contexto, similitudes = responder(c)
+        fuentes = [f"{d['id']} (sim={s:.3f})" for d, s in zip(contexto, similitudes)]
+        print(f"Fuentes recuperadas: {fuentes if fuentes else 'ninguna (bajo umbral -> deriva a humano)'}")
         print(f"Respuesta: {respuesta}")
