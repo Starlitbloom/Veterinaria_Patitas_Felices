@@ -1,13 +1,35 @@
-# Agente Patitas Felices (EP2) — ISY0101
+# Agente Patitas Felices EV2
 
-Agente conversacional para la Veterinaria Patitas Felices (Rancagua) construido con **LangGraph** y un LLM vía **OpenRouter**. Evoluciona el pipeline RAG de la EP1 (en `ep1/`) a un agente que **consulta, escribe y razona**, con **memoria de corto y largo plazo** y **planificación**.
+Agente conversacional para la Veterinaria Patitas Felices (Rancagua) construido con **LangGraph** y un LLM vía **OpenRouter**. Evoluciona el pipeline RAG de la EV1 a un agente que **consulta, escribe y razona**, con **memoria de corto y largo plazo** y **planificación**.
 
-**Integrantes:** María Fernanda Calfileo, Vicente Concha, Sandra Chamorro · **Docente:** Juan Burgueño
+**Integrantes:** María Fernanda Calfileo, Vicente Concha, Sandra Chamorro · 
+**Docente:** Juan Burgueño
 
 ![Arquitectura](arquitectura_patitas_felices.png)
 
 ## Qué hace el agente
 Responde consultas de la clínica, agenda y cancela citas, deriva a un veterinario humano ante síntomas o accidentes (nunca diagnostica ni da dosis) y recuerda datos durables del dueño entre sesiones.
+
+## Estructura del repositorio
+```
+Veterinaria_Patitas_Felices/
+├── README.md
+├── arquitectura_patitas_felices.png
+├── Ev1/                      # Evaluación 1: asistente RAG
+│   ├── asistente_rag.py
+│   ├── arquitectura.png
+│   ├── README.md
+│   └── evidencia/
+└── EV2/                      # Evaluación 2: agente (este proyecto)
+    ├── main.py
+    ├── requirements.txt
+    ├── README.md
+    ├── .gitignore
+    ├── arquitectura_patitas_felices.png
+    ├── agente_patitas/       # grafo, tools, memoria, agenda, conocimiento
+    ├── tests/                # 10 pruebas de orquestación
+    └── evidencia/            # pruebas_pytest.txt y demo_llm_real.txt
+```
 
 ## Ejecución
 ```bash
