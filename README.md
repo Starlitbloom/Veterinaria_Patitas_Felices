@@ -34,6 +34,7 @@ Veterinaria_Patitas_Felices/
 
 ## Ejecución
 ```bash
+cd EV2
 pip install -r requirements.txt
 export OPENROUTER_API_KEY='tu-key'      # Linux/Mac. En Windows (CMD): set OPENROUTER_API_KEY=tu-key
                                         # nunca la escribas en el código ni la subas al repo
