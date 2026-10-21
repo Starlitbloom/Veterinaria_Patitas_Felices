@@ -1,0 +1,64 @@
+
+==============================================================================
+1. Consulta informativa (tool de consulta/RAG)
+==============================================================================
+USUARIO (sesion-1): ¿Atienden conejos y hasta qué hora están abiertos?
+  · MEMORIA RECUPERADA: ninguna
+  · TRIAJE (reglas): RUTINA
+  · PLAN: [P1] Consultar si atienden conejos y cuál es el horario de atención.
+  · TOOL CALL: buscar_conocimiento({'consulta': '¿Atienden conejos y cuál es el horario de atención de Veterinaria Patitas Felices en Rancagua?'})
+  · TOOL RESULT [buscar_conocimiento]: [horario_ubicacion] Horario de atención y ubicación: Veterinaria Patitas Felices atiende de lunes a viernes de 09:00 a 19:00 hrs. Está ubicada en Rancagua, Regi
+  · agente
+AGENTE: Sí, atendemos conejos. Estamos abiertos de lunes a viernes hasta las 19:00.
+
+==============================================================================
+2. Agendamiento con conflicto -> replanificación (tools de escritura)
+==============================================================================
+USUARIO (sesion-1): Quiero una hora de control para mi gata Luna el 2026-10-21 a las 10:00.
+  · MEMORIA RECUPERADA: ninguna
+  · TRIAJE (reglas): RUTINA
+  · PLAN: [P1] Consultar si hay disponibilidad para una hora de control de Luna el 2026-10-21 a las 10:00. -> [P2] Si el horario está disponible, agendar la cita para Luna.
+  · TOOL CALL: consultar_disponibilidad({'fecha': '2026-10-21'})
+  · TOOL RESULT [consultar_disponibilidad]: {"fecha": "2026-10-21", "horas_libres": ["09:00", "12:00", "13:00", "14:00", "16:00", "17:00", "18:00"]}
+  · agente
+AGENTE: Lo siento, las 10:00 ya están ocupadas. Para el 21 de octubre tengo disponibles las 09:00, 12:00, 13:00, 14:00, 16:00, 17:00 y 18:00. ¿Cuál prefieres para el control de Luna?
+
+==============================================================================
+3. Urgencia -> el plan cambia de prioridad y deriva
+==============================================================================
+USUARIO (sesion-2): Mi perro Toby se comió una barra de chocolate y está vomitando, ¿qué le doy?
+  · MEMORIA RECUPERADA: ninguna
+  · TRIAJE (reglas): URGENTE -> ticket de derivación creado
+  · PLAN: [P1] Evaluar la urgencia por ingestión de chocolate y vómitos; no darle nada sin indicación veterinaria. -> [P1] Derivar de inmediato a un veterinario para recibir instrucciones y atención urgente.
+  · TOOL CALL: evaluar_urgencia({'descripcion': 'El perro Toby ingirió una barra de chocolate y está vomitando.'})
+  · TOOL RESULT [evaluar_urgencia]: {"nivel": "URGENTE", "accion": "derivar de inmediato a veterinario; no agendar rutina"}
+  · TOOL CALL: guardar_dato_memoria({'dato': 'El dueño tiene un perro llamado Toby.'})
+  · TOOL RESULT [guardar_dato_memoria]: {"estado": "guardado", "texto": "El dueño tiene un perro llamado Toby."}
+  · agente
+AGENTE: No le des nada ni intentes provocarle el vómito sin indicación veterinaria. La urgencia ya fue derivada: lleva a Toby o llama a la clínica de inmediato para recibir instrucciones y atención.
+
+==============================================================================
+4a. Memoria de largo plazo: dato durable
+==============================================================================
+USUARIO (sesion-3): Hola, soy Ana. Mi gata Luna es alérgica a la penicilina, tenlo presente.
+  · MEMORIA RECUPERADA: ['El dueño tiene un perro llamado Toby.']
+  · TRIAJE (reglas): RUTINA
+  · PLAN: [P1] Guardar que la gata Luna, de Ana, es alérgica a la penicilina.
+  · TOOL CALL: guardar_dato_memoria({'dato': 'Ana tiene una gata llamada Luna, que es alérgica a la penicilina.'})
+  · TOOL RESULT [guardar_dato_memoria]: {"estado": "guardado", "texto": "Ana tiene una gata llamada Luna, que es alérgica a la penicilina."}
+  · agente
+AGENTE: ¡Hola, Ana! Tendré presente que Luna es alérgica a la penicilina.
+
+==============================================================================
+4b. Memoria de largo plazo: NUEVA sesión (otro thread_id)
+==============================================================================
+USUARIO (sesion-4): Quiero pedir hora para mi gata, ¿tienes algo que deba considerar?
+  · MEMORIA RECUPERADA: ['Ana tiene una gata llamada Luna, que es alérgica a la penicilina.']
+  · TRIAJE (reglas): RUTINA
+  · PLAN: [P1] Consultar horarios disponibles para la cita de tu gata. -> [P2] Buscar recomendaciones y aspectos que conviene considerar antes de la visita. -> [P3] Agendar la cita una vez que elijas un horario disponible.
+  · TOOL CALL: buscar_conocimiento({'consulta': 'Recomendaciones y aspectos que conviene considerar antes de una visita veterinaria para gata; además horarios disponibles de atención o agenda para pedir hora.'})
+  · TOOL RESULT [buscar_conocimiento]: [horario_ubicacion] Horario de atención y ubicación: Veterinaria Patitas Felices atiende de lunes a viernes de 09:00 a 19:00 hrs. Está ubicada en Rancagua, Regi
+  · TOOL CALL: consultar_disponibilidad({'fecha': '2026-10-21'})
+  · TOOL RESULT [consultar_disponibilidad]: {"fecha": "2026-10-21", "horas_libres": ["09:00", "12:00", "13:00", "14:00", "16:00", "17:00", "18:00"]}
+  · agente
+AGENTE: Para Luna, tengo disponibilidad mañana, 21 de octubre, a las 09:00, 12:00, 13:00, 14:00, 16:00, 17:00 o 18:00. Recuerda avisar al equipo que es alérgica a la penicilina. ¿Qué horario y servicio prefieres?

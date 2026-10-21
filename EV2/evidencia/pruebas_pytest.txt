@@ -1,0 +1,19 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.4, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\sttef\AppData\Local\Programs\Python\Python314\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\sttef\Downloads\Veterinaria_Patitas_Felices_EP2\Veterinaria_Patitas_Felices_EP2
+plugins: anyio-4.14.0, langsmith-0.14.11, platformdirs-4.12.4, typeguard-4.5.2
+collecting ... collected 10 items
+
+tests/test_agente.py::test_consulta_usa_rag PASSED                       [ 10%]
+tests/test_agente.py::test_replanifica_si_hora_ocupada PASSED            [ 20%]
+tests/test_agente.py::test_urgencia_deriva_por_triaje_aunque_el_llm_no_llame_tools PASSED [ 30%]
+tests/test_agente.py::test_rutina_no_crea_ticket PASSED                  [ 40%]
+tests/test_agente.py::test_memoria_largo_plazo_entre_sesiones PASSED     [ 50%]
+tests/test_agente.py::test_historial_persiste_en_sqlite PASSED           [ 60%]
+tests/test_agente.py::test_ventana_de_contexto_recorta_y_empieza_en_humano PASSED [ 70%]
+tests/test_agente.py::test_ventana_conserva_turno_actual_aunque_exceda_presupuesto PASSED [ 80%]
+tests/test_agente.py::test_parsear_plan_tolerante PASSED                 [ 90%]
+tests/test_agente.py::test_clasificar_urgencia_sin_falsos_positivos PASSED [100%]
+
+============================= 10 passed in 6.75s ==============================
