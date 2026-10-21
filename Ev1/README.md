@@ -53,7 +53,7 @@ El informe completo con el análisis del caso, diseño del pipeline RAG, arquite
 ## Integrantes : 
 - María Calfileo
 - Stephanie Chamorro
-- Leandro Marin
+
 
 ## Docente: 
 - Juan Burgueño
