@@ -2,7 +2,7 @@
 
 Agente conversacional para la Veterinaria Patitas Felices (Rancagua) construido con **LangGraph** y un LLM vía **OpenRouter**. Evoluciona el pipeline RAG de la EV1 a un agente que **consulta, escribe y razona**, con **memoria de corto y largo plazo** y **planificación**.
 
-**Integrantes:** María Calfileo, Vicente Concha, Stephanie Chamorro · 
+**Integrantes:** María Calfileo,Stephanie Chamorro · 
 
 **Docente:** Juan Burgueño
 
